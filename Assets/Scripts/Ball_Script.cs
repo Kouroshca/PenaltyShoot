@@ -9,7 +9,19 @@ public class Ball_Script : MonoBehaviour
     public float Force;
     public Transform Target;
     public Slider forceUI;
- 
+
+    public Transform initialPosition;
+
+
+    void Start()
+    {
+        if (initialPosition == null)
+        {
+            initialPosition = new GameObject("InitialPosition").transform;
+            initialPosition.position = transform.position;
+        }
+    }
+
     private void Update()
     {
         if (Input.GetKey(KeyCode.Space)) // it will fill slider dependin on pressure
@@ -17,8 +29,8 @@ public class Ball_Script : MonoBehaviour
             Force++; // hold the button to add force to the ball
             Slider();
         }
-        
-        
+
+
         if (Input.GetKeyUp(KeyCode.Space))
         {
             Shoot();
@@ -26,15 +38,13 @@ public class Ball_Script : MonoBehaviour
 
         }
 
-        
+
     }
-
-
     private void Shoot()
     {
         Vector3 ShootForce = (Target.position - this.transform.position).normalized;
         Debug.Log("Shoot");
-       // GetComponent<Rigidbody>().AddForce(ShootForce * Force + new Vector3(0, 3f, 0), ForceMode.Impulse);
+        // GetComponent<Rigidbody>().AddForce(ShootForce * Force + new Vector3(0, 3f, 0), ForceMode.Impulse);
         GetComponent<Rigidbody>().AddForce(ShootForce * Force, ForceMode.Impulse);
     }
     private void Slider()
@@ -42,15 +52,23 @@ public class Ball_Script : MonoBehaviour
         forceUI.value = Force;
     }
 
-    public void ResetGauge() 
+    public void ResetGauge()
     {
         Force = 0;
         forceUI.value = 0;
     }
 
-    IEnumerator Wait() 
+    IEnumerator Wait()
     {
         yield return new WaitForSeconds(1.5f);
         ResetGauge();
+        ResetPosition();
+    }
+
+    private void ResetPosition()
+    {
+        GetComponent<Rigidbody>().velocity = Vector3.zero;
+        GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
+        transform.position = initialPosition.position;
     }
 }
