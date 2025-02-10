@@ -3,14 +3,19 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class Ball_Script : MonoBehaviour
 {
     public float Force;
     public Transform Target;
     public Slider forceUI;
-
+    
     public Transform initialPosition;
+    public TextMeshProUGUI scoreText;
+    private int score = 0;
+
+
 
 
     void Start()
@@ -20,6 +25,7 @@ public class Ball_Script : MonoBehaviour
             initialPosition = new GameObject("InitialPosition").transform;
             initialPosition.position = transform.position;
         }
+        UpdateScoreText();
     }
 
     private void Update()
@@ -70,5 +76,27 @@ public class Ball_Script : MonoBehaviour
         GetComponent<Rigidbody>().velocity = Vector3.zero;
         GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
         transform.position = initialPosition.position;
+        transform.rotation = Quaternion.identity;
+        IncreaseScore();
+    }
+    private void IncreaseScore()
+    {
+        score += 1;
+        UpdateScoreText();
+    }
+    void UpdateScoreText()
+    {
+        if (scoreText != null)
+        {
+            scoreText.text = "Score: " + score;
+        }
+    }
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Goal"))
+        {
+            Debug.Log("Goal scored");
+            IncreaseScore();
+        }
     }
 }
