@@ -1,6 +1,4 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -8,15 +6,12 @@ using TMPro;
 public class Ball_Script : MonoBehaviour
 {
     public float Force;
-    public Transform Target;
-    public Slider forceUI;
-    
+    public float maxForce = 50f; // liimit max force
+    public Transform Target; //target 
+    public Slider forceUI;// slider 
     public Transform initialPosition;
     public TextMeshProUGUI scoreText;
-    private int score = 0;
-
-
-
+    private int score = 0; // initial score value
 
     void Start()
     {
@@ -25,34 +20,31 @@ public class Ball_Script : MonoBehaviour
             initialPosition = new GameObject("InitialPosition").transform;
             initialPosition.position = transform.position;
         }
-        UpdateScoreText();
+        UpdateScoreText(); // update it as a 0 value.
     }
 
     private void Update()
     {
-        if (Input.GetKey(KeyCode.Space)) // it will fill slider dependin on pressure
+        if (Input.GetKey(KeyCode.Space))
         {
-            Force++; // hold the button to add force to the ball
+            Force = Mathf.Clamp(Force + Time.deltaTime * 20f, 0, maxForce); // how fast the slider filled up.
             Slider();
         }
-
 
         if (Input.GetKeyUp(KeyCode.Space))
         {
             Shoot();
-            StartCoroutine(Wait());
-
+            StartCoroutine(RespawnAfterTime(3f)); // wait for 3 seconds to put a new ball. 
         }
-
-
     }
+
     private void Shoot()
     {
-        Vector3 ShootForce = (Target.position - this.transform.position).normalized;
-        Debug.Log("Shoot");
-        // GetComponent<Rigidbody>().AddForce(ShootForce * Force + new Vector3(0, 3f, 0), ForceMode.Impulse);
+        Vector3 ShootForce = (Target.position - transform.position).normalized;
         GetComponent<Rigidbody>().AddForce(ShootForce * Force, ForceMode.Impulse);
+        ResetGauge(); // Ensure force resets after shooting
     }
+
     private void Slider()
     {
         forceUI.value = Force;
@@ -64,39 +56,35 @@ public class Ball_Script : MonoBehaviour
         forceUI.value = 0;
     }
 
-    IEnumerator Wait()
-    {
-        yield return new WaitForSeconds(1.5f);
-        ResetGauge();
-        ResetPosition();
-    }
-
     private void ResetPosition()
     {
         GetComponent<Rigidbody>().velocity = Vector3.zero;
         GetComponent<Rigidbody>().angularVelocity = Vector3.zero;
         transform.position = initialPosition.position;
         transform.rotation = Quaternion.identity;
-        IncreaseScore();
     }
-    private void IncreaseScore()
-    {
-        score += 1;
-        UpdateScoreText();
-    }
-    void UpdateScoreText()
+
+    private void UpdateScoreText()
     {
         if (scoreText != null)
         {
             scoreText.text = "Score: " + score;
         }
     }
+
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Goal"))
         {
             Debug.Log("Goal scored");
-            IncreaseScore();
+            score++;
+            UpdateScoreText();
         }
+    }
+
+    IEnumerator RespawnAfterTime(float Delay)
+    {
+        yield return new WaitForSeconds(Delay);
+        ResetPosition();
     }
 }
